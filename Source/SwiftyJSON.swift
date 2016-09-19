@@ -49,6 +49,7 @@ public enum Type :Int{
     case array
     case dictionary
     case null
+	case any
     case unknown
 }
 
@@ -129,7 +130,8 @@ public struct JSON {
     fileprivate var rawArray: [Any] = []
     fileprivate var rawDictionary: [String : Any] = [:]
     fileprivate var rawString: String = ""
-    fileprivate var rawNumber: NSNumber = 0
+	fileprivate var rawNumber: NSNumber = 0
+	fileprivate var rawAny: Any! = nil
     fileprivate var rawNull: NSNull = NSNull()
     /// fileprivate type
     fileprivate var _type: Type = .null
@@ -150,6 +152,8 @@ public struct JSON {
                 return self.rawNumber
             case .bool:
                 return self.rawNumber
+			case .any:
+				return self.rawAny
             default:
                 return self.rawNull
             }
@@ -175,9 +179,9 @@ public struct JSON {
             case let dictionary as [String : Any]:
                 _type = .dictionary
                 self.rawDictionary = dictionary
-            default:
-                _type = .unknown
-                _error = NSError(domain: ErrorDomain, code: ErrorUnsupportedType, userInfo: [NSLocalizedDescriptionKey: "It is a unsupported type"])
+			default:
+				_type = .any
+				self.rawAny = newValue
             }
         }
     }
@@ -750,6 +754,25 @@ extension JSON {
             self.object = newValue
         }
     }
+}
+
+//MARK: - Null
+extension JSON {
+	
+	//Optional value
+	public var any: Any? {
+		get {
+			switch self.type {
+			case .any:
+				return self.rawAny
+			default:
+				return nil
+			}
+		}
+		set {
+			self.object = newValue
+		}
+	}
 }
 
 //MARK: - Null
